@@ -933,15 +933,16 @@ if (window.OFFLINE_DATA || urlParamsMaster.has('data')) {
         renderGame();
     }
 } else {
-    // РЕЖИМ РЕДАКТОРА: «Включаем свет», когда всё подгрузилось
-    window.onload = () => {
-        document.body.style.display = 'block';
-        toggleModes(); 
-        toggleGameType(); 
-        toggleMathPanel(); 
-        updateMathWarning(); 
-        update(); 
-    };
+// РЕЖИМ РЕДАКТОРА: «Включаем свет», когда всё подгрузилось
+window.onload = () => {
+    document.body.style.display = 'flex'; // Было 'block', меняем на 'flex'
+    document.body.style.overflow = 'hidden'; // Гарантируем отсутствие внешнего скролла
+    toggleModes(); 
+    toggleGameType(); 
+    toggleMathPanel(); 
+    updateMathWarning(); 
+    update(); 
+};
 }
     
 </script>
@@ -949,49 +950,46 @@ if (window.OFFLINE_DATA || urlParamsMaster.has('data')) {
 <style>
     :root { --main: #00d4ff; }
 
-    /* Скрываем интерфейс при прямой ссылке с данными */
-    :document:has-data .main-container, 
-    :document:has-data .editor-header, 
-    :document:has-data #infoModal { 
-        display: none !important; 
+    /* Базовые настройки страницы — фиксируем высоту экрана */
+    html, body { 
+        height: 100%; 
+        margin: 0; 
+        padding: 0; 
+        overflow: hidden; /* Отключаем прокрутку всей страницы */
+        background: #0a192f;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Фиксируем body, чтобы не было общей прокрутки страницы */
     body { 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        background: #0a192f; 
-        color: white; 
         display: flex; 
         flex-direction: column; 
         padding: 20px; 
-        margin: 0; 
-        height: 100vh; 
         box-sizing: border-box; 
-        overflow: hidden; /* Запрещаем прокрутку всей страницы */
     }
 
+    /* Контейнер для панелей */
     .main-container { 
         display: flex; 
         gap: 20px; 
         flex-grow: 1; 
-        min-height: 0; /* Важно для работы прокрутки внутри дочерних элементов */
+        min-height: 0; /* Разрешает внутреннюю прокрутку */
         width: 100%; 
     }
 
-    /* Панель настроек - тут прокрутка РАЗРЕШЕНА */
+    /* ЛЕВАЯ ПАНЕЛЬ — тут прокрутка БУДЕТ */
     .panel { 
         width: 400px; 
         background: rgba(255,255,255,0.05); 
         padding: 20px; 
         border-radius: 15px; 
         border: 1px solid var(--main); 
-        overflow-y: auto; /* Прокрутка только здесь */
+        overflow-y: auto; /* Скролл только внутри этой панели */
         box-shadow: 0 0 20px rgba(0,0,0,0.5); 
-        position: relative; 
-        flex-shrink: 0;
+        flex-shrink: 0; 
+        box-sizing: border-box;
     }
 
-    /* Зона предпросмотра - ФИКСИРОВАНА */
+    /* ПРАВАЯ ПАНЕЛЬ — тут предпросмотр ФИКСИРОВАН */
     .preview-wrapper { 
         flex-grow: 1; 
         display: flex; 
@@ -999,22 +997,6 @@ if (window.OFFLINE_DATA || urlParamsMaster.has('data')) {
         gap: 10px; 
         min-height: 0; 
     }
-
-    .preview-tabs { display: flex; gap: 10px; justify-content: center; flex-shrink: 0; }
-    
-    .tab-btn { 
-        padding: 8px 12px; 
-        background: rgba(0,212,255,0.1); 
-        border: 1px solid var(--main); 
-        color: #fff; 
-        font-size: 0.85rem; 
-        border-radius: 5px; 
-        flex: 1; 
-        cursor: pointer; 
-        transition: 0.3s; 
-    }
-    .tab-btn.active { background: var(--main); color: #000; font-weight: bold; }
-    .tab-btn:hover { filter: brightness(1.2); }
 
     .preview { 
         flex-grow: 1; 
@@ -1024,29 +1006,32 @@ if (window.OFFLINE_DATA || urlParamsMaster.has('data')) {
         border: 1px solid #333; 
     }
 
+    /* Вспомогательные элементы */
+    .preview-tabs { display: flex; gap: 10px; justify-content: center; flex-shrink: 0; }
+    .tab-btn { padding: 8px 12px; background: rgba(0,212,255,0.1); border: 1px solid var(--main); color: #fff; font-size: 0.85rem; border-radius: 5px; flex: 1; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { background: var(--main); color: #000; font-weight: bold; }
+    
     label { display: block; margin-top: 15px; font-size: 0.85rem; color: #ffffff; font-weight: bold; }
     input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #1a2a3a; color: white; margin-top: 5px; box-sizing: border-box; outline: none; }
-    input:focus, textarea:focus { border-color: var(--main); }
     .row { display: flex; gap: 10px; }
     .mode-settings { background: rgba(0,212,255,0.07); padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid var(--main); }
     .note { font-size: 0.8rem; color: #f1c40f; background: rgba(241, 196, 15, 0.1); padding: 8px; border-radius: 5px; margin-top: 5px; border: 1px dashed #f1c40f; }
     
     .math-panel { display: none; background: rgba(0,212,255,0.1); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--main); flex-wrap: wrap; gap: 5px; }
-    .math-btn { background: #1a2a3a; border: 1px solid var(--main); color: var(--main); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-family: monospace; font-size: 14px; transition: 0.2s; width: auto; }
+    .math-btn { background: #1a2a3a; border: 1px solid var(--main); color: var(--main); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 14px; }
     
     button { width: 100%; padding: 14px; background: var(--main); color: #0a192f; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; text-transform: uppercase; }
-    button:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    
     iframe { width: 100%; height: 100%; border: none; }
     hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
-    
+
+    /* Красивый скроллбар для левой панели */
     ::-webkit-scrollbar { width: 6px; } 
     ::-webkit-scrollbar-track { background: transparent; } 
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; } 
     ::-webkit-scrollbar-thumb:hover { background: var(--main); }
 
     #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.95); z-index: 9999; }
-    #infoModalContent { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a192f; border: 2px solid var(--main); padding: 30px; border-radius: 15px; box-shadow: 0 0 30px var(--main); text-align: center; width: 320px; }
+    #infoModalContent { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a192f; border: 2px solid var(--main); padding: 30px; border-radius: 15px; text-align: center; width: 320px; }
     
     .editor-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; justify-content: center; flex-shrink: 0; }
     .editor-header img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--main); object-fit: cover; }
